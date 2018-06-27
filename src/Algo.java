@@ -15,27 +15,42 @@ public class Algo {
 	int[][] distances;
 	int[][] listeTabou1;
 	int[][] listeTabou2;
+	int[][] listeFrequence;
+	int dureeTabouInitial;
 	
 	int bi;
 	int bj;
 	int pos;
+
 	
 	public Algo(int nbIteriation, int dureeTabou, int nbVille, String file) {
 		this.nbIteriation = nbIteriation;
 		this.dureeTabou = dureeTabou;
+		this.dureeTabouInitial = dureeTabou;
 		this.iter_courante = 0;
 		this.nbVille = nbVille;
 		this.courante = new Solution(nbVille);
 		this.construction_distances(nbVille, file);
 		this.courante.evaluer(distances);
 		
+		/* affichage matrice distance
+		for(int[] dd : distances) {
+			System.out.println();
+			for(int d : dd)
+				System.out.print(d+" ");
+		}
+		System.out.println();
+		*/		
+		
 		listeTabou1 = new int[nbVille][nbVille];
 		listeTabou2 = new int[nbVille][nbVille];
+		listeFrequence = new int[nbVille][nbVille];
 		
 		//Remplie les liste vide de valeur négative
 		for(int i=0;i<nbVille;i++){
 			Arrays.fill(listeTabou1[i], -1);
 			Arrays.fill(listeTabou2[i], -1);			
+			Arrays.fill(listeFrequence[i], 0);			
 		}
 		
 		System.out.println("Solution initiale aléatoire : ");
@@ -124,7 +139,7 @@ public class Algo {
 	}
 	
 	public void voisinage_2_opt(){
-		int best_vois = 10000;
+		int best_vois = 1000000;
 		boolean tous_tabou = true;
 		
 		// on séléctionne une première ville pour le mouvement
@@ -159,7 +174,7 @@ public class Algo {
 		
 		boolean first            = true; //indique si c'est la premiere fois
 										 //que l'on est dans un mimium local
-		boolean descente         = false;// indique si la solution courzntz corresponds à une descente
+		boolean descente         = false;// indique si la solution courznte corresponds à une descente
 		int ameliore_solution = -1;      // indique l'iteration où l'on a amélioré la solution
 		int f_avant, f_apres;            // valeurs de la fitness avant et après une itération
 		// La meilleure solution trouvée (= plus petit minium trouvé) à conserver
@@ -196,9 +211,10 @@ public class Algo {
 			  if (    ((f_avant<f_apres)&&(descente==true))
 				  || ((f_avant == f_apres)&&(first)) ){
 			      
-			      System.out.print("On est dans un minimum local a l'iteration "+(iter_courante-1));
+			  /*    System.out.print("On est dans un minimum local a l'iteration "+(iter_courante-1));
 			      System.out.print(" -> min = " + f_avant);
 			      System.out.print(" km (le + petit min local deja trouve = "+best_eval+" km)");
+			      System.out.println();*/
 			      first = false;
 		      }
 
@@ -210,8 +226,13 @@ public class Algo {
 			  if ((f_avant!=f_apres)&&(!first))
 			    first = true;
 			  
-		      // mise à jour de la liste tabou
-		      listeTabou1[bi][bj] = iter_courante+dureeTabou;
+			  
+			  //listeTabou1[bi][bj] = iter_courante+DTC();
+		      //listeTabou1[bi][bj] = iter_courante+DTA();
+			  listeTabou1[bi][bj] = iter_courante+DTF(bi, bj);
+			  //listeTabou1[bi][bj] = iter_courante+DTI();
+			  
+			  
 		      //mise_a_jour_liste_tabou_2(courant, position);
 		      f_avant = f_apres; 
 
@@ -219,6 +240,35 @@ public class Algo {
 		  
 		}
 		return best_solution;
+	}
+	
+	
+	/** Utilisation de la durée tabou constante */
+	public int DTC() {
+		return dureeTabouInitial;
+	}
+	
+	 /** Génération d'une duree tabou Aleatoire */
+	public int DTA() {
+		double dureeAlea = dureeTabouInitial;
+		dureeAlea = ( Math.random() + 0.5)*dureeAlea;
+		return (int)dureeAlea;
+	}
+	
+	/** Génération d'une duree tabou 'fondante' */
+	public int DTI() {
+		int alpha=1000;
+		int duree=(int)(alpha*Math.log10(nbIteriation+1-iter_courante)/nbVille);
+		return duree;
+	}
+	
+	/** Génération d'une duree tabou basée sur la fréquence d'apparition */
+	public int DTF(int i, int j) {
+		int alpha = 100;
+		int frequence = listeFrequence[i][j];
+		listeFrequence[i][j] += 1;
+		int duree = (int)(alpha*frequence)/nbVille;
+		return duree;
 	}
 	
 }

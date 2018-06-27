@@ -3,11 +3,20 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		int nb_iteration = 50;
-		int duree_tabou  = 5;
+		/** config 10 villes*/
+		int nb_iteration = 1000;
 		int nb_villes    = 10;
+		int duree_tabou  = (int) Math.sqrt(nb_iteration);
 		String fichierVille = "distances_entre_villes_10.txt";
-
+		
+		
+		/** config 50 villes
+		int nb_iteration = 10000;
+		int nb_villes    = 50;
+		int duree_tabou  = (int) Math.sqrt(nb_iteration);
+		String fichierVille = "distances_entre_villes_50.txt";
+		 */
+		
 		
 		if(args.length == 4){
 			nb_iteration = Integer.parseInt(args[0]);
@@ -20,13 +29,15 @@ public class Main {
 			System.out.println("Usage : nb_iteration duree_tabou nb_villes fichierVille");
 		}
 		
+		long timer_start = System.currentTimeMillis();
 		Algo algo = new Algo(nb_iteration, duree_tabou, nb_villes, fichierVille);
 		Solution best = algo.optimiser();
-		
-		long timer_start = System.currentTimeMillis();
+		best.ordonner();
 		best.afficher();
 		long timer_stop = System.currentTimeMillis();
-		System.out.println("Solution trouvé en : "+(timer_stop-timer_start)*1000000+" s");
+		double chrono = (timer_stop-timer_start);
+		chrono *= 1000000;
+		System.out.println("Solution trouvé en : "+chrono+" s");
 	}
 
 }
